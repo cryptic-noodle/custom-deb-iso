@@ -1,5 +1,0 @@
-#!/bin/sh
-set -e
-
-echo "=== Cleaning old build ==="
-lb clean --purge
