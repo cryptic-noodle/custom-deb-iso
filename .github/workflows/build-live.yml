@@ -53,7 +53,6 @@ jobs:
           echo "==== Making auto scripts executable ===="
           chmod +x auto/config || true
           chmod +x auto/build || true
-          chmod +x auto/clean || true
 
           echo "==== Cleaning previous build ===="
           lb clean --purge || true
