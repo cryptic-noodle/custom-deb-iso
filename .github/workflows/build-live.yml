@@ -56,13 +56,13 @@ jobs:
           chmod +x auto/clean || true
 
           echo "==== Cleaning previous build ===="
-          auto/clean || true
+          lb clean --purge || true
 
           echo "==== Running auto/config ===="
-          auto/config ${{ github.event.inputs.debug && '--debug' || '' }}
+          lb config ${{ github.event.inputs.debug && '--debug' || '' }}
 
           echo "==== Building ISO ===="
-          auto/build
+          lb build
 
           echo "==== Listing output files ===="
           find . -maxdepth 3 -type f \( -name "*.iso" -o -name "*.img" -o -name "*.hybrid" \)
