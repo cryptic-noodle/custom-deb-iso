@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+# Enable verbose/debug if user requested
+DEBUG=""
+[ "$1" = "--debug" ] && DEBUG="--verbose --debug"
+
+lb config \
+  --distribution trixie \
+  --archive-areas "main contrib non-free non-free-firmware" \
+  --binary-images iso-hybrid \
+  --bootloader "grub-pc,grub-efi" \
+  --bootappend-live "boot=live components persistence persistence-encryption=luks live-config.user=misab" \
+  $DEBUG
+

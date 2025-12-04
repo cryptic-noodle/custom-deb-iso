@@ -1,0 +1,112 @@
+name: Build Debian Live ISO
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Enable debug mode'
+        type: boolean
+        required: false
+        default: false
+      release:
+        description: 'Upload to GitHub Release?'
+        type: boolean
+        required: false
+        default: true
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     # required for releases
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Run build inside Debian container
+      uses: addnab/docker-run-action@v3
+      with:
+        image: debian:latest
+        options: --privileged -v ${{ github.workspace }}:/workspace -w /workspace
+        run: |
+          echo "==== Updating container ===="
+          apt-get update
+
+          echo "==== Installing Live-Build build deps ===="
+          apt-get install -y \
+            live-build \
+            debootstrap \
+            debian-archive-keyring \
+            ca-certificates \
+            xorriso \
+            mtools \
+            syslinux-utils \
+            isolinux \
+            grub-pc-bin \
+            grub-efi-amd64-bin \
+            fakeroot \
+            curl \
+            wget \
+            git
+
+          echo "==== Making auto scripts executable ===="
+          chmod +x auto/config || true
+          chmod +x auto/build || true
+          chmod +x auto/clean || true
+
+          echo "==== Cleaning previous build ===="
+          auto/clean || true
+
+          echo "==== Running auto/config ===="
+          auto/config ${{ github.event.inputs.debug && '--debug' || '' }}
+
+          echo "==== Building ISO ===="
+          auto/build
+
+          echo "==== Listing output files ===="
+          find . -maxdepth 3 -type f \( -name "*.iso" -o -name "*.img" -o -name "*.hybrid" \)
+
+    - name: Detect ISO file
+      id: find
+      run: |
+        ISO=$(find . -type f -name "*.iso" | head -n1)
+        if [ -z "$ISO" ]; then
+          echo "No ISO found!"
+          exit 1
+        fi
+        echo "iso_path=$ISO" >> $GITHUB_OUTPUT
+        echo "iso_name=$(basename $ISO)" >> $GITHUB_OUTPUT
+        echo "iso_size=$(du -h $ISO | cut -f1)" >> $GITHUB_OUTPUT
+        echo "Found ISO: $ISO"
+
+    - name: Upload ISO artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: debian-live-iso
+        path: ${{ steps.find.outputs.iso_path }}
+        retention-days: 20
+
+    - name: Upload to GitHub Release
+      if: ${{ github.event.inputs.release == 'true' }}
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ${{ steps.find.outputs.iso_path }}
+        tag_name: "build-${{ github.run_number }}"
+        name: "Debian Live Build #${{ github.run_number }}"
+        draft: false
+        prerelease: false
+
+    - name: Build Summary
+      if: always()
+      run: |
+        echo "## Debian Live ISO Build" >> $GITHUB_STEP_SUMMARY
+        echo "- Debug: ${{ github.event.inputs.debug }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Release upload: ${{ github.event.inputs.release }}" >> $GITHUB_STEP_SUMMARY
+        echo "- ISO file: ${{ steps.find.outputs.iso_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Size: ${{ steps.find.outputs.iso_size }}" >> $GITHUB_STEP_SUMMARY
+
+    - name: Cleanup Docker
+      if: always()
+      run: docker system prune -f || true
+

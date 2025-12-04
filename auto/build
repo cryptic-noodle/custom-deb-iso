@@ -1,0 +1,8 @@
+i#!/bin/sh
+set -e
+
+echo "=== Starting live-build ==="
+lb build 2>&1 | tee build.log
+
+echo "=== Build finished ==="
+

@@ -1,0 +1,146 @@
+#!/bin/sh
+set -e
+
+LOG="/var/log/custom-hook.log"
+
+log() {
+    echo "[HOOK] $1" | tee -a "$LOG"
+}
+
+banner() {
+    echo
+    echo "=========================================="
+    echo "== $1"
+    echo "=========================================="
+    echo
+    echo "[HOOK] $1" >> "$LOG"
+}
+
+banner "Starting custom hook 900-install-extras"
+
+##############################################
+# BRAVE BROWSER REPO
+##############################################
+banner "Adding Brave Browser APT Repo"
+
+BRAVE_KEY="/usr/share/keyrings/brave-browser-archive-keyring.gpg"
+BRAVE_SRC="/etc/apt/sources.list.d/brave-browser-release.sources"
+
+log "Downloading Brave signing key"
+curl -fsSL https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg \
+    -o "$BRAVE_KEY"
+
+log "Downloading Brave repository source file"
+curl -fsSL https://brave-browser-apt-release.s3.brave.com/brave-browser.sources \
+    -o "$BRAVE_SRC"
+
+
+##############################################
+# JULIAN FAIRFAX APT REPO
+##############################################
+banner "Adding Julian Fairfax APT Repo (adw-gtk3)"
+
+JULIAN_KEY="/usr/share/keyrings/julians-package-repo.gpg"
+JULIAN_URL="https://julianfairfax.codeberg.page/package-repo/pub.gpg"
+
+log "Downloading Julian repo key"
+curl -A "Mozilla/5.0" -fsSL "$JULIAN_URL" -o /tmp/julian.pub.gpg
+
+log "Validating Julian key header"
+if ! head -n1 /tmp/julian.pub.gpg | grep -q "BEGIN PGP PUBLIC KEY BLOCK"; then
+    echo "ERROR: Invalid or corrupted PGP key downloaded from $JULIAN_URL" >&2
+    head -n20 /tmp/julian.pub.gpg
+    exit 1
+fi
+
+log "Key header looks good; dearmoring with POSIX-compliant syntax"
+gpg --batch --yes --dearmor < /tmp/julian.pub.gpg > "$JULIAN_KEY"
+
+log "Configuring Julian repo"
+echo "deb [signed-by=$JULIAN_KEY] https://julianfairfax.codeberg.page/package-repo/debs packages main" \
+    > /etc/apt/sources.list.d/julians-package-repo.list
+
+##############################################
+# INSTALL MAIN APT PACKAGES
+##############################################
+banner "Installing main APT packages"
+
+apt-get update -y
+apt-get install -y \
+    brave-browser \
+    adw-gtk3
+
+
+##############################################
+# INSTALL MANUAL .DEB PACKAGES
+##############################################
+banner "Installing additional .deb packages"
+
+TMPDIR="/tmp/custom-debs"
+mkdir -p "$TMPDIR"
+
+log "Downloading Readest"
+curl -fsSL \
+    https://github.com/readest/readest/releases/download/v0.9.93/Readest_0.9.93_amd64.deb \
+    -o "$TMPDIR/readest.deb"
+
+log "Downloading Windscribe"
+curl -fsSL \
+    https://windscribe.com/install/desktop/linux_deb_x64 \
+    -o "$TMPDIR/windscribe.deb"
+
+log "Downloading Free Download Manager"
+curl -fsSL \
+    https://files2.freedownloadmanager.org/6/latest/freedownloadmanager.deb \
+    -o "$TMPDIR/fdm.deb"
+
+log "Installing debs"
+dpkg -i "$TMPDIR"/*.deb || apt-get -fy install
+
+
+##############################################
+# DOCKER INSTALL
+##############################################
+banner "Installing Docker (get.docker.com)"
+
+curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+sh /tmp/get-docker.sh
+
+
+##############################################
+# TAILSCALE INSTALL
+##############################################
+banner "Installing Tailscale"
+
+curl -fsSL https://tailscale.com/install.sh | sh
+
+
+##############################################
+# BIBATA CURSOR THEME
+##############################################
+banner "Installing Bibata Cursor Theme"
+
+cd /tmp
+curl -fsSL \
+    https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Classic.tar.xz \
+    -o bibata.tar.xz
+
+mkdir bibata
+tar -xf bibata.tar.xz -C bibata/
+
+log "Installing cursors to /usr/share/icons/"
+mkdir -p /usr/share/icons/
+cp -r bibata/Bibata-* /usr/share/icons/
+
+
+##############################################
+# CLEANUP
+##############################################
+banner "Cleaning up temporary files"
+
+rm -rf "$TMPDIR" /tmp/bibata /tmp/bibata.tar.xz /tmp/get-docker.sh /tmp/julian.pub.gpg
+apt-get clean
+
+
+banner "Custom hook completed successfully"
+exit 0
