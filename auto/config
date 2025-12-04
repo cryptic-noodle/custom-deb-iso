@@ -5,7 +5,7 @@ set -e
 DEBUG=""
 [ "$1" = "--debug" ] && DEBUG="--verbose --debug"
 
-lb config \
+lb config noauto \
   --distribution trixie \
   --archive-areas "main contrib non-free non-free-firmware" \
   --binary-images iso-hybrid \
