@@ -37,6 +37,6 @@ gnupg
 spice-vdagent 
 qemu-guest-agent
 
-(DD-term dependencies)
+# DD-term dependencies
 gir1.2-vte-2.91 
 gir1.2-handy-1
