@@ -19,6 +19,8 @@ gnupg
 chrony
 zsh
 gh
+android-sdk-platform-tools-common
+fastboot
 
 gir1.2-vte-2.91 
 gir1.2-handy-1
