@@ -22,6 +22,7 @@ gh
 android-sdk-platform-tools-common
 fastboot
 
+# Zram support
 zram-tools
 
 # Network
