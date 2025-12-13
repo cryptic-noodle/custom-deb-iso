@@ -17,3 +17,4 @@ curl
 ca-certificates
 gnupg
 chrony
+zsh
