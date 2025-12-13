@@ -21,6 +21,7 @@ zsh
 gh
 android-sdk-platform-tools-common
 fastboot
+zram-tools
 
 gir1.2-vte-2.91 
 gir1.2-handy-1
