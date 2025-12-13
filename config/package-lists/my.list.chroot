@@ -16,3 +16,4 @@ podman
 curl
 ca-certificates
 gnupg
+chrony
