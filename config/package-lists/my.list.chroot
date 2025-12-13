@@ -1,8 +1,9 @@
+# Base Packages
 task-gnome-desktop 
 cryptsetup 
 cryptsetup-initramfs
-wget
-nmap
+
+# Tools
 neovim
 git
 tmux
@@ -13,16 +14,29 @@ gnome-tweaks
 gparted
 gnome-shell-extension-manager
 podman
-curl
-ca-certificates
-gnupg
 chrony
 zsh
 gh
+
+# scrcpy support
 android-sdk-platform-tools-common
 fastboot
-zram-tools
-firewalld
 
+zram-tools
+
+# Network
+firewalld
+avahi-utils
+nmap
+wget
+curl
+ca-certificates
+gnupg
+
+# VM support (KVM)
+spice-vdagent 
+qemu-guest-agent
+
+(DD-term dependencies)
 gir1.2-vte-2.91 
 gir1.2-handy-1
