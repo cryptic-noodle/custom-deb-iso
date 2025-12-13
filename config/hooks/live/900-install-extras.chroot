@@ -19,23 +19,6 @@ banner() {
 banner "Starting custom hook 900-install-extras"
 
 ##############################################
-# BRAVE BROWSER REPO
-##############################################
-banner "Adding Brave Browser APT Repo"
-
-BRAVE_KEY="/usr/share/keyrings/brave-browser-archive-keyring.gpg"
-BRAVE_SRC="/etc/apt/sources.list.d/brave-browser-release.sources"
-
-log "Downloading Brave signing key"
-curl -fsSL https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg \
-    -o "$BRAVE_KEY"
-
-log "Downloading Brave repository source file"
-curl -fsSL https://brave-browser-apt-release.s3.brave.com/brave-browser.sources \
-    -o "$BRAVE_SRC"
-
-
-##############################################
 # JULIAN FAIRFAX APT REPO
 ##############################################
 banner "Adding Julian Fairfax APT Repo (adw-gtk3)"
@@ -67,7 +50,6 @@ banner "Installing main APT packages"
 
 apt-get update -y
 apt-get install -y \
-    brave-browser \
     adw-gtk3
 
 
@@ -78,11 +60,6 @@ banner "Installing additional .deb packages"
 
 TMPDIR="/tmp/custom-debs"
 mkdir -p "$TMPDIR"
-
-log "Downloading Readest"
-curl -fsSL \
-    https://github.com/readest/readest/releases/download/v0.9.93/Readest_0.9.93_amd64.deb \
-    -o "$TMPDIR/readest.deb"
 
 log "Downloading Windscribe"
 curl -fsSL \
