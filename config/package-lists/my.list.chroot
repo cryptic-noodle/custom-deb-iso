@@ -19,7 +19,7 @@ zsh
 gh
 
 # scrcpy support
-android-sdk-platform-tools-common
+android-sdk-platform-tools
 fastboot
 
 # Zram support
