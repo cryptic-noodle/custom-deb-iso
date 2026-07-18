@@ -41,3 +41,5 @@ gnupg
 # VM support (KVM)
 spice-vdagent 
 qemu-guest-agent
+
+lsb-release
