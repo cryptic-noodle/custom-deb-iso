@@ -1,5 +1,5 @@
 # Base Packages
-task-gnome-desktop
+task-kde-desktop
 cryptsetup
 cryptsetup-initramfs
 
@@ -10,9 +10,8 @@ tmux
 gparted
 btop
 vlc
-gnome-tweaks
 gparted
-gnome-shell-extension-manager
+kwin-addons
 podman
 chrony
 zsh
@@ -42,7 +41,3 @@ gnupg
 # VM support (KVM)
 spice-vdagent 
 qemu-guest-agent
-
-# DD-term dependencies
-gir1.2-vte-2.91 
-gir1.2-handy-1
